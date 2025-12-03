@@ -1,14 +1,12 @@
 # 📚 Project Documentation
 
-Welcome to the central hub for all my project documentation. This repository serves as a knowledge base, containing detailed guides, technical specifications, and references for the various projects I have worked on.
+Welcome to the central hub for all my project documentation. This repository serves as a knowledge base, containing detailed guides, technical specifications, development logs and references for the various projects I have worked on.
 
 ## 🎯 Purpose
 
 The goal of this repository is to keep documentation organized, version-controlled, and easily accessible. Each Markdown file corresponds to a specific project and covers topics such as:
 - Project Overview
 - Architecture & Design
-- Setup & Installation
-- Usage Guidelines
 - Development Logs
 
 ## 🗂️ Documentation Index
