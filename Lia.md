@@ -149,7 +149,82 @@ The project is built on four distinct layers:
 
 
 ---
+# Major Changes
 
+**Date:** January 06, 2026
+**Version:** 0.4.0 (The Voice Update)
+**Status:** Functional Hybrid System (Godot + Python)
+
+---
+
+### 🚀 Summary
+This update marks the transition from a "Local-Only Text Chatbot" to a **"Hybrid Cloud Voice Assistant."** We moved the heavy processing (Audio & Intelligence) to a dedicated Python backend and cloud APIs, resulting in near-instant response times and expressive voice capabilities.
+
+---
+
+### ✨ New Features
+
+#### 1. Hybrid Audio Architecture (The "Split Brain")
+* **Concept:** Godot handles the body (Visuals/Animation), while Python handles the senses (Ears/Mouth).
+* **Communication:** Implemented a local UDP network for fast data transfer.
+    * `Port 4242`: User Voice Text (Python → Godot)
+    * `Port 4243`: AI Response Text (Godot → Python)
+
+#### 2. Cloud Intelligence Upgrade (Groq)
+* **Switched from Ollama to Groq:**
+    * **Model:** `llama-3.3-70b-versatile` (Primary) with fallback to `llama-3.1-8b-instant`.
+    * **Performance:** Inference time reduced from ~4.0s (Local) to ~0.4s (Cloud).
+    * **Proactive Triggers:** Fixed logic to ensure the AI responds to system events (e.g., "User is bored") by formatting them as pseudo-user prompts.
+
+#### 3. Voice I/O Implementation
+* **Ears (STT):** Integrated **Groq Whisper (Large-v3)**.
+    * Replaced `SpeechRecognition` (Google) for faster, higher-accuracy transcription.
+* **Mouth (TTS):** Integrated **Microsoft Edge TTS** (`edge-tts`).
+    * Provides high-quality neural voices (`en-US-AnaNeural`) without API costs.
+* **"Walkie-Talkie" Logic:**
+    * Implemented a **Microphone Lock** to prevent Lia from hearing her own voice and entering an infinite loop.
+    * Added a **Cooldown Timer (2s)** after user speech to prevent accidental double-sending.
+
+#### 4. Interaction Refinements
+* **Typing Mode Protocol:**
+    * When the user clicks the Chat Input Box, Godot sends a `__SYS__PAUSE_MIC` command to Python.
+    * When the user submits text, Godot sends `__SYS__RESUME_MIC`.
+    * *Result:* Eliminates conflict between voice input and keyboard input.
+* **Latent Masking:**
+    * Added immediate "Thinking..." UI feedback and animations to mask the 1-2 second latency caused by TTS audio generation.
+
+---
+
+### 🛠 Technical Changes
+
+#### **Python Backend (`audio_server.py`)**
+* **Cross-Platform Playback:**
+    * **Windows:** Uses `pydub` + `simpleaudio`.
+    * **Linux (Arch):** Uses `subprocess` to call `ffplay` externally, fixing the `SIGSEGV` crash caused by internal audio libraries.
+* **Security:** Integrated `python-dotenv` to load API keys from a local `.env` file, keeping secrets out of source code.
+
+#### **Godot Controller (`chat_controller.gd`)**
+* Refactored `parse_and_animate` to support concurrent animation and voice triggers.
+* Added `_send_sys_command` to handle low-level control of the Python backend.
+
+---
+
+### 🐛 Bug Fixes
+
+| ID | Issue | Solution |
+| :--- | :--- | :--- |
+| **B-01** | `SIGSEGV` Crash on Linux | Replaced `pydub.play` with external `ffplay` subprocess call. |
+| **B-02** | Infinite Voice Loop | Added `is_ai_speaking` flag to sleep the microphone while TTS is active. |
+| **B-03** | Text Input Ignored | Fixed signal connection logic in `_ready` and `_on_text_submitted`. |
+| **B-04** | API Rate Limit (429) | Implemented automatic fallback from Llama-70b to Llama-8b upon exhaustion. |
+| **B-05** | Proactive Triggers Ignored | Reformatted system events as `[SYSTEM EVENT: ...]` user messages to force AI acknowledgement. |
+
+---
+
+### 🔮 Next Steps
+* [ ] **Visuals:** Overhaul UI (Chat Bubbles, Fonts, Transparency).
+* [ ] **Model:** Improve texture quality and shading for Lia.
+* [ ] **Deployment:** Finalize `LifecycleManager` to bundle the Python executable inside the Godot Export.
 
 ## 💡 Lessons Learned
 > "Wayland security is strict. If you want a window to control itself (move/resize), you often have to fall back to X11 (XWayland) drivers."
