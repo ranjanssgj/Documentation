@@ -22,7 +22,7 @@ The project is built on four distinct layers:
 
 ## 📜 Development Log & Challenges
 
-### Phase 1: The Transparent Stage
+# Phase 1: The Transparent Stage
 **Goal:** Create a borderless, transparent window that floats over the wallpaper but under active windows.
 
 * **Challenge 1: The Black Screen.**
@@ -44,7 +44,7 @@ The project is built on four distinct layers:
       --display-driver x11
       ```
 
-### Phase 2: The Smart Hitbox (Interaction)
+# Phase 2: The Smart Hitbox (Interaction)
 **Goal:** Allow the user to click the character (to chat) but click *through* the empty air (to use the desktop).
 
 * **The "Ghost Paradox":** If `mouse_passthrough` is ON, we can't click Lia. If OFF, we can't click the desktop behind her.
@@ -57,7 +57,7 @@ The project is built on four distinct layers:
       ```
     * *Result:* Only the pixels occupied by Lia block the mouse; everything else is transparent air.
 
-### Phase 3: The Brain (Local AI Integration)
+# Phase 3: The Brain (Local AI Integration)
 **Goal:** Enable offline conversation with personality.
 
 * **Implementation:** Used `HTTPRequest` node to send JSON payloads to `localhost:11434` (Ollama).
@@ -65,7 +65,7 @@ The project is built on four distinct layers:
     * *Prompt Strategy:* "If happy, start with `[HAPPY]`. If leaving, use `[HIDE]`."
 * **The Parser:** Wrote a string parser in GDScript that extracts these tags, strips them from the visible text, and triggers the `AnimationPlayer`.
 
-### Phase 4: Animation & Behavior (Current Focus)
+# Phase 4: Animation & Behavior (Current Focus)
 **Goal:** A "State Machine" that allows Lia to roam, hide, and idle organically.
 
 * **The Asset Crisis (Mixamo vs. VRM):**
@@ -82,7 +82,7 @@ The project is built on four distinct layers:
     4. Export as GLB.
     * This "bakes" the correct orientation permanently before Godot even sees the file.
  
-### Phase 5: The Asset Pipeline Fix (Blender Integration)
+# Phase 5: The Asset Pipeline Fix (Blender Integration)
 
 **Goal:** Fix the "Moonwalking" and "Broken Wrists" issues permanently by standardizing the character rig.
 
@@ -100,7 +100,7 @@ The project is built on four distinct layers:
 
 - **Result:** Animations now play with correct orientation (No more Z-Flip) and correct rest pose (No more T-Pose arms).
 
-### Phase 6: Intelligence & Memory (The "Brain" Upgrade)
+# Phase 6: Intelligence & Memory (The "Brain" Upgrade)
 
 **Goal:** Move from "Random Behavior" to "Context-Aware Behavior."
 
@@ -127,7 +127,7 @@ The project is built on four distinct layers:
 
 - **Fix:** Implemented a Priority Dictionary in `chat_controller.gd`. `[WORK]` is checked before `[WAVE]`, ensuring she Salutes instead of waving goodbye when the user says "I'm busy."
 
-### Phase 7: Cross-Platform & Architecture Experiments
+# Phase 7: Cross-Platform & Architecture Experiments
 
 **Goal:** Solve the Linux Wayland movement restriction.
 
@@ -201,7 +201,7 @@ This update marks the transition from a "Local-Only Text Chatbot" to a **"Hybrid
 * Refactored `parse_and_animate` to support concurrent animation and voice triggers.
 * Added `_send_sys_command` to handle low-level control of the Python backend.
 ---
-### Phase 8: Polish & Interaction (The "Alive" Update)
+# Phase 8: Polish & Interaction (The "Alive" Update)
 
 **Goal:** Transform the chatbot from a "text-generator" into a synchronized, visually polished, and active desktop agent.
 
