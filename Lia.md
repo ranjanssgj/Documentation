@@ -82,11 +82,11 @@ The project is built on four distinct layers:
     4. Export as GLB.
     * This "bakes" the correct orientation permanently before Godot even sees the file.
  
-# Phase 5: The Asset Pipeline Fix (Blender Integration)
+### Phase 5: The Asset Pipeline Fix (Blender Integration)
 
 **Goal:** Fix the "Moonwalking" and "Broken Wrists" issues permanently by standardizing the character rig.
 
-## The Workflow:
+#### The Workflow:
 
 - **Clean:** Imported original VRM to Blender -> Cleaned Mesh -> Exported as FBX.
 
@@ -94,17 +94,17 @@ The project is built on four distinct layers:
 
 - **Combine:** Merged all animations into a single .glb file using an online glTF combiner.
 
-## The Code Update:
+#### The Code Update:
 
 - Refactored `main.gd` to target the new node hierarchy (`Lia/Node/Armature/Skeleton3D`) instead of the old `GeneralSkeleton`.
 
 - **Result:** Animations now play with correct orientation (No more Z-Flip) and correct rest pose (No more T-Pose arms).
 
-# Phase 6: Intelligence & Memory (The "Brain" Upgrade)
+### Phase 6: Intelligence & Memory (The "Brain" Upgrade)
 
 **Goal:** Move from "Random Behavior" to "Context-Aware Behavior."
 
-## Feature 1: Persistent Memory (`memory_manager.gd`)
+#### Feature 1: Persistent Memory (`memory_manager.gd`)
 
 - **Implementation:** Created a JSON database at `user://lia_memory.json`.
 
@@ -112,7 +112,7 @@ The project is built on four distinct layers:
 
 - **Effect:** On startup, Lia checks this file. If the name is "User" (default), she enters Setup Mode to ask for your name. If known, she greets you personally.
 
-## Feature 2: Activity Monitoring (`activity_monitor.gd`)
+#### Feature 2: Activity Monitoring (`activity_monitor.gd`)
 
 - **Logic:** A background node tracks mouse velocity and idle time.
 
@@ -121,23 +121,23 @@ The project is built on four distinct layers:
   - **Bored:** No movement for >30s → Triggers Yawn or Sit.
   - **Active:** High movement → Wakes up to Idle.
 
-## Feature 3: Priority Tag Parsing
+#### Feature 3: Priority Tag Parsing
 
 - **Issue:** The AI would sometimes output multiple tags (e.g., `[WAVE] [WORK]`) causing conflicting animations.
 
 - **Fix:** Implemented a Priority Dictionary in `chat_controller.gd`. `[WORK]` is checked before `[WAVE]`, ensuring she Salutes instead of waving goodbye when the user says "I'm busy."
 
-# Phase 7: Cross-Platform & Architecture Experiments
+### Phase 7: Cross-Platform & Architecture Experiments
 
 **Goal:** Solve the Linux Wayland movement restriction.
 
-## Experiment A: Windows Port
+#### Experiment A: Windows Port
 
 - **Action:** Exported project with Embed PCK enabled.
 
 - **Result:** Confirmed movement logic works perfectly on Windows 10/11. This isolated the "Stuck Window" bug specifically to Arch Linux/Wayland security policies.
 
-## Experiment B: Fullscreen Overlay (The "Glass Pane")
+#### Experiment B: Fullscreen Overlay (The "Glass Pane")
 
 - **Concept:** Instead of moving the window, make the window fullscreen/static and move the character inside it.
 
@@ -155,12 +155,8 @@ The project is built on four distinct layers:
 **Version:** 0.4.0 (The Voice Update)
 **Status:** Functional Hybrid System (Godot + Python)
 
----
-
 ### 🚀 Summary
 This update marks the transition from a "Local-Only Text Chatbot" to a **"Hybrid Cloud Voice Assistant."** We moved the heavy processing (Audio & Intelligence) to a dedicated Python backend and cloud APIs, resulting in near-instant response times and expressive voice capabilities.
-
----
 
 ### ✨ New Features
 
@@ -193,8 +189,6 @@ This update marks the transition from a "Local-Only Text Chatbot" to a **"Hybrid
 * **Latent Masking:**
     * Added immediate "Thinking..." UI feedback and animations to mask the 1-2 second latency caused by TTS audio generation.
 
----
-
 ### 🛠 Technical Changes
 
 #### **Python Backend (`audio_server.py`)**
@@ -206,25 +200,63 @@ This update marks the transition from a "Local-Only Text Chatbot" to a **"Hybrid
 #### **Godot Controller (`chat_controller.gd`)**
 * Refactored `parse_and_animate` to support concurrent animation and voice triggers.
 * Added `_send_sys_command` to handle low-level control of the Python backend.
-
 ---
+### Phase 8: Polish & Interaction (The "Alive" Update)
 
-### 🐛 Bug Fixes
+**Goal:** Transform the chatbot from a "text-generator" into a synchronized, visually polished, and active desktop agent.
 
-| ID | Issue | Solution |
-| :--- | :--- | :--- |
-| **B-01** | `SIGSEGV` Crash on Linux | Replaced `pydub.play` with external `ffplay` subprocess call. |
-| **B-02** | Infinite Voice Loop | Added `is_ai_speaking` flag to sleep the microphone while TTS is active. |
-| **B-03** | Text Input Ignored | Fixed signal connection logic in `_ready` and `_on_text_submitted`. |
-| **B-04** | API Rate Limit (429) | Implemented automatic fallback from Llama-70b to Llama-8b upon exhaustion. |
-| **B-05** | Proactive Triggers Ignored | Reformatted system events as `[SYSTEM EVENT: ...]` user messages to force AI acknowledgement. |
+#### 1. Lip-Sync & Animation Timing (The "Ventriloquist" Fix)
 
----
+* **Problem:** TTS audio and animations were desynchronized. Lia would often finish speaking while the animation kept playing, or animations would trigger too early.
+* **Attempt 1 (Chunking):** Tried splitting the sentence into small chunks (`Text -> Play -> Wait for Audio Done signal -> Next Text`).
+    * *Result:* Failed. It sounded robotic and caused "stuttering" because the TTS engine lost context (prosody/intonation) between chunks.
+* **Solution (Estimated Timestamping):**
+    * Kept the TTS generation as one fluid sentence for natural prosody.
+    * Implemented a **Regex Scheduler** in `chat_controller.gd`.
+    * Calculated the estimated "arrival time" of a tag based on character count and reading speed (`TTS_CHAR_SPEED = 16.0 chars/sec`).
+    * Godot now plays the audio immediately but "schedules" the animation to trigger `X` seconds later using `create_timer()`.
+
+#### 2. Visual Restoration (The "Deep Fried" Fix)
+
+* **Problem:** Porting the VRM character to GLB (via Blender) destroyed the textures. The model looked "neon," dark, or transparent in Godot due to import conflicts.
+* **Root Cause:**
+    * Blender exported **Vertex Colors**, which mixed with the textures to create neon artifacts.
+    * Z-Axis flipping in Blender inverted the **Normals**, making the mesh "inside-out."
+    * Anime materials require specific "Unshaded" or "Toon" settings which standard PBR materials don't support.
+* **The Fix:**
+    * **Material Extraction:** Switched Godot import settings to `Use External` materials (`.tres`).
+    * **Configuration:**
+        * `Vertex Color` -> **Unchecked** "Use as Albedo".
+        * `Cull Mode` -> **Disabled** (to fix invisible back-faces).
+        * `Shading` -> **Unshaded** (to restore the flat anime look).
+    * **Texture Recovery:** Manually re-assigned the 33 original PNGs to the extracted materials.
+
+#### 3. The Action Engine (From Chatbot to Agent)
+
+* **Objective:** Give Lia the ability to control the PC (open apps, search web).
+* **Architecture Decision:**
+    * *Initial Plan:* Move the entire "Brain" (LLM logic) to Python.
+    * *Pivot:* Decided against it to preserve the stability of the Godot Frontend.
+    * *Final Architecture:* **"Godot Brain, Python Hands."**
+* **Implementation:**
+    * **Godot:** Updated System Prompt to include action tags: `[EXEC:web:url]` and `[EXEC:app:name]`.
+    * **Parser:** `chat_controller.gd` detects these tags, strips them from the speech text, and sends a UDP packet starting with `__CMD__` to Python.
+    * **Python:** Created `action_engine.py` (modular) to handle `subprocess` and `webbrowser` calls.
+    * **Safety:** Implemented a specific command parser in `audio_server.py` to distinguish between `Speech` (TTS) and `Orders` (Execution).
+
+#### 4. Proactive System Events
+
+* **Objective:** Allow Lia to speak without user input (e.g., "Welcome back" or "You seem quiet").
+* **Protocol:** Created a hidden signal `__EVENT__`.
+* **Flow:**
+    1.  Godot detects an event (e.g., `IdleTimer` timeout).
+    2.  Sends `__EVENT__User is idle` to Python.
+    3.  Python generates a response *without* logging it as a user chat message.
+    4.  Lia speaks the response naturally to re-engage the user.
 
 ### 🔮 Next Steps
 * [ ] **Visuals:** Overhaul UI (Chat Bubbles, Fonts, Transparency).
 * [ ] **Model:** Improve texture quality and shading for Lia.
-* [ ] **Deployment:** Finalize `LifecycleManager` to bundle the Python executable inside the Godot Export.
 
 ## 💡 Lessons Learned
 > "Wayland security is strict. If you want a window to control itself (move/resize), you often have to fall back to X11 (XWayland) drivers."
